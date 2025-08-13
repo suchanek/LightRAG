@@ -67,3 +67,77 @@ LightRAG offers several query modes controlled by the `QueryParam` class:
 - `mix`: Integrates knowledge graph and vector retrieval.
 
 The `QueryParam` class also allows for customization of the response format, conversation history, and other parameters.
+
+## RAGAnything Integration
+
+LightRAG seamlessly integrates with [RAG-Anything](https://github.com/HKUDS/RAG-Anything), an All-in-One Multimodal RAG System. This integration enables advanced parsing and RAG capabilities for various document formats, including PDFs, Office documents, images, and more.
+
+### Key Features of RAGAnything
+
+-   **End-to-End Multimodal Pipeline:** A complete workflow from document ingestion and parsing to intelligent multimodal query answering.
+-   **Universal Document Support:** Processes a wide range of file formats.
+-   **Specialized Content Analysis:** Includes dedicated processors for images, tables, and mathematical equations.
+-   **Multimodal Knowledge Graph:** Automatically extracts entities and discovers cross-modal relationships.
+-   **Hybrid Intelligent Retrieval:** Advanced search capabilities spanning textual and multimodal content.
+
+### Usage
+
+To use RAGAnything, you first need to install it:
+```bash
+pip install raganything
+```
+
+Then, you can use it in your code to process multimodal documents:
+```python
+import asyncio
+from raganything import RAGAnything, RAGAnythingConfig
+from lightrag import LightRAG
+from lightrag.llm.openai import openai_complete_if_cache, openai_embed
+from lightrag.utils import EmbeddingFunc
+
+async def main():
+    # Configure and initialize RAGAnything
+    config = RAGAnythingConfig(
+        working_dir="./rag_storage",
+        mineru_parse_method="auto",
+        enable_image_processing=True,
+        enable_table_processing=True,
+        enable_equation_processing=True,
+    )
+
+    rag = RAGAnything(
+        config=config,
+        llm_model_func=...,
+        vision_model_func=...,
+        embedding_func=...,
+    )
+
+    # Process a document
+    await rag.process_document_complete(
+        file_path="path/to/your/document.pdf",
+        output_dir="./output"
+    )
+
+    # Query the processed document
+    result = await rag.query_with_multimodal("Your query here", mode="hybrid")
+    print(result)
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
+## LightRAG Server API
+
+The LightRAG server provides a RESTful API for interacting with the system. The key areas of the API are:
+
+-   **Documents:** Endpoints for managing documents, such as uploading, deleting, and checking the status of documents.
+-   **Knowledge Graph:** Endpoints for exploring and manipulating the knowledge graph, including operations on entities and relations.
+-   **Retrieval:** Endpoints for querying the RAG system to retrieve information.
+-   **API:** Meta-endpoints for interacting with the API itself, possibly for health checks or version information.
+
+### Key Characteristics
+
+-   **Authentication:** The API can be configured to be "Login Free" (no authentication) or secured with API keys.
+-   **Versioning:**
+    -   Core Version: `v1.3.10`
+    -   API Version: `0178`
