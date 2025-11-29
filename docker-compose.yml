@@ -1,11 +1,12 @@
 services:
   lightrag:
     container_name: lightrag_pagent
-    image: ghcr.io/suchanek/lightrag_pagent:latest
+    image: egsuchanek/lightrag_pagent:latest
     build:
       context: .
       dockerfile: Dockerfile
       tags:
+        - egsuchanek/lightrag_pagent:latest
         - ghcr.io/suchanek/lightrag_pagent:latest
     ports:
       - "${PORT:-9621}:9621"
