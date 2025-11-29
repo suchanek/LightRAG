@@ -3,7 +3,6 @@ import asyncio
 from lightrag import LightRAG, QueryParam
 from lightrag.llm.ollama import ollama_embed, openai_complete_if_cache
 from lightrag.utils import EmbeddingFunc
-from lightrag.kg.shared_storage import initialize_pipeline_status
 
 # WorkingDir
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -56,7 +55,7 @@ async def initialize_rag():
     rag = LightRAG(
         working_dir=WORKING_DIR,
         llm_model_func=llm_model_func,
-        llm_model_max_token_size=32768,
+        summary_max_tokens=10000,
         embedding_func=embedding_func,
         chunk_token_size=512,
         chunk_overlap_token_size=256,
@@ -66,9 +65,7 @@ async def initialize_rag():
         doc_status_storage="RedisKVStorage",
     )
 
-    await rag.initialize_storages()
-    await initialize_pipeline_status()
-
+    await rag.initialize_storages()  # Auto-initializes pipeline_status
     return rag
 
 

@@ -6,7 +6,6 @@ import logging.config
 from lightrag import LightRAG, QueryParam
 from lightrag.llm.ollama import ollama_model_complete, ollama_embed
 from lightrag.utils import EmbeddingFunc, logger, set_verbose_debug
-from lightrag.kg.shared_storage import initialize_pipeline_status
 
 from dotenv import load_dotenv
 
@@ -87,7 +86,7 @@ async def initialize_rag():
         working_dir=WORKING_DIR,
         llm_model_func=ollama_model_complete,
         llm_model_name=os.getenv("LLM_MODEL", "qwen2.5-coder:7b"),
-        llm_model_max_token_size=8192,
+        summary_max_tokens=8192,
         llm_model_kwargs={
             "host": os.getenv("LLM_BINDING_HOST", "http://localhost:11434"),
             "options": {"num_ctx": 8192},
@@ -104,9 +103,7 @@ async def initialize_rag():
         ),
     )
 
-    await rag.initialize_storages()
-    await initialize_pipeline_status()
-
+    await rag.initialize_storages()  # Auto-initializes pipeline_status
     return rag
 
 

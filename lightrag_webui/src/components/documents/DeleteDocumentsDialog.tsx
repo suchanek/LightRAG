@@ -35,16 +35,16 @@ const Label = ({
 
 interface DeleteDocumentsDialogProps {
   selectedDocIds: string[]
-  totalCompletedCount: number
   onDocumentsDeleted?: () => Promise<void>
 }
 
-export default function DeleteDocumentsDialog({ selectedDocIds, totalCompletedCount, onDocumentsDeleted }: DeleteDocumentsDialogProps) {
+export default function DeleteDocumentsDialog({ selectedDocIds, onDocumentsDeleted }: DeleteDocumentsDialogProps) {
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const [confirmText, setConfirmText] = useState('')
   const [deleteFile, setDeleteFile] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [deleteLLMCache, setDeleteLLMCache] = useState(false)
   const isConfirmEnabled = confirmText.toLowerCase() === 'yes' && !isDeleting
 
   // Reset state when dialog closes
@@ -52,6 +52,7 @@ export default function DeleteDocumentsDialog({ selectedDocIds, totalCompletedCo
     if (!open) {
       setConfirmText('')
       setDeleteFile(false)
+      setDeleteLLMCache(false)
       setIsDeleting(false)
     }
   }, [open])
@@ -59,15 +60,9 @@ export default function DeleteDocumentsDialog({ selectedDocIds, totalCompletedCo
   const handleDelete = useCallback(async () => {
     if (!isConfirmEnabled || selectedDocIds.length === 0) return
 
-    // Check if user is trying to delete all completed documents
-    if (selectedDocIds.length === totalCompletedCount && totalCompletedCount > 0) {
-      toast.error(t('documentPanel.deleteDocuments.cannotDeleteAll'))
-      return
-    }
-
     setIsDeleting(true)
     try {
-      const result = await deleteDocuments(selectedDocIds, deleteFile)
+      const result = await deleteDocuments(selectedDocIds, deleteFile, deleteLLMCache)
 
       if (result.status === 'deletion_started') {
         toast.success(t('documentPanel.deleteDocuments.success', { count: selectedDocIds.length }))
@@ -101,7 +96,7 @@ export default function DeleteDocumentsDialog({ selectedDocIds, totalCompletedCo
     } finally {
       setIsDeleting(false)
     }
-  }, [isConfirmEnabled, selectedDocIds, totalCompletedCount, deleteFile, setOpen, t, onDocumentsDeleted])
+  }, [isConfirmEnabled, selectedDocIds, deleteFile, deleteLLMCache, setOpen, t, onDocumentsDeleted])
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -160,6 +155,20 @@ export default function DeleteDocumentsDialog({ selectedDocIds, totalCompletedCo
             />
             <Label htmlFor="delete-file" className="text-sm font-medium cursor-pointer">
               {t('documentPanel.deleteDocuments.deleteFileOption')}
+            </Label>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id="delete-llm-cache"
+              checked={deleteLLMCache}
+              onChange={(e) => setDeleteLLMCache(e.target.checked)}
+              disabled={isDeleting}
+              className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
+            />
+            <Label htmlFor="delete-llm-cache" className="text-sm font-medium cursor-pointer">
+              {t('documentPanel.deleteDocuments.deleteLLMCacheOption')}
             </Label>
           </div>
         </div>

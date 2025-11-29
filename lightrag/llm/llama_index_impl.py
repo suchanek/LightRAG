@@ -21,7 +21,6 @@ from tenacity import (
 )
 from lightrag.utils import (
     wrap_embedding_func_with_attrs,
-    locate_json_string_body_from_string,
 )
 from lightrag.exceptions import (
     APIConnectionError,
@@ -95,9 +94,14 @@ async def llama_index_complete_if_cache(
     prompt: str,
     system_prompt: Optional[str] = None,
     history_messages: List[dict] = [],
+    enable_cot: bool = False,
     chat_kwargs={},
 ) -> str:
     """Complete the prompt using LlamaIndex."""
+    if enable_cot:
+        logger.debug(
+            "enable_cot=True is not supported for LlamaIndex implementation and will be ignored."
+        )
     try:
         # Format messages for chat
         formatted_messages = []
@@ -139,6 +143,7 @@ async def llama_index_complete(
     prompt,
     system_prompt=None,
     history_messages=None,
+    enable_cot: bool = False,
     keyword_extraction=False,
     settings: LlamaIndexSettings = None,
     **kwargs,
@@ -157,16 +162,15 @@ async def llama_index_complete(
     if history_messages is None:
         history_messages = []
 
-    keyword_extraction = kwargs.pop("keyword_extraction", None)
+    kwargs.pop("keyword_extraction", None)
     result = await llama_index_complete_if_cache(
         kwargs.get("llm_instance"),
         prompt,
         system_prompt=system_prompt,
         history_messages=history_messages,
+        enable_cot=enable_cot,
         **kwargs,
     )
-    if keyword_extraction:
-        return locate_json_string_body_from_string(result)
     return result
 
 
